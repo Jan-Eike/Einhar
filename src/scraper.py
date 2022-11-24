@@ -3,6 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import os
+import pathlib
+from concurrent.futures import ThreadPoolExecutor
 
 URL = "https://oriath.net/Audio/"
 page = requests.get(URL)
@@ -12,39 +14,20 @@ soup = BeautifulSoup(page.content, "html.parser")
 links = soup.find_all("a")
 print(links)
 # %%
-for link in links[2:]:
-    link_url = link["href"]
-    print(link_url)
-
+pathlib.Path('../Audiodata').mkdir(parents=True, exist_ok=True) 
 # %%
-links[2]["href"]
+def scrape(link):
+    child_page = requests.get(URL+link["href"])
+    child_soup = BeautifulSoup(child_page.content, "html.parser")
+    child_links = child_soup.find_all("a", class_="play")
+    for i, child_link in enumerate(child_links):
+        response = requests.get(URL[:-7]+child_link["href"])
+        l = link["href"].replace("/", "_")
+        open(f"../Audiodata/{l}{i}.ogg" , "wb" ).write(response.content)
 # %%
-page2 = requests.get(URL+links[2]["href"])
-# %%
-soup2 = BeautifulSoup(page2.content, "html.parser")
-# %%
-links = soup2.find_all("a", class_="play")
-print(links)
-number_links = len(links)
-data_dir = 'Audiodata'
-print(number_links)
-print(os.listdir(data_dir))
-# %%
-print(URL[:-7]+links[2]["href"])
-filenames = []
-for i in range(0,number_links):
-    filenames.append(os.listdir(data_dir)[i])
-print(filenames)
-# %%
-
-for i in range(0,number_links):
-    response = requests.get(URL[:-7]+links[0]["href"])
-    open("./Audiodata/maurauder"+ str(i)+ ".ogg" , "wb" ).write(response.content)
-    
-
-#response = requests.get(URL[:-7]+links[2]["href"])
-#open("marauder.ogg", "wb").write(response.content)
-
+with ThreadPoolExecutor(max_workers=20) as executor:
+    for j, link in enumerate(links[2:]):
+        future = executor.submit(scrape, link)
 # %%
 data = pd.DataFrame({
     
@@ -53,5 +36,4 @@ data = pd.DataFrame({
     "class_id":0
 })
 print(data)
-
 # %%
