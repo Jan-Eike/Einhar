@@ -6,6 +6,8 @@ import pathlib
 import requests
 from bs4 import BeautifulSoup
 import numpy as np
+from tqdm import tqdm
+from pydub import AudioSegment
 # %%
 URL = "https://oriath.net/Audio/"
 page = requests.get(URL)
@@ -48,25 +50,37 @@ unique_classes = [u_c.replace("-", "_") for u_c in unique_classes]
 class_dict = dict(zip(unique_classes, range(len(unique_classes))))
 # %%
 filenames = []
-for filename in os.listdir(pathlib.Path("../Audiodata")):
+for filename in tqdm(os.listdir(pathlib.Path("../Audiodata"))):
     with open(os.path.join(pathlib.Path("../Audiodata"), filename), 'r') as f:
         filenames.append(f.name.split("\\")[-1])
 filenames = pd.Series(filenames)
 filenames = filenames[filenames.str.contains("Conversation") == False].reset_index(drop=True).to_list()
 # %%
 regexes = class_dict.keys()
-
 regex = re.compile("|".join(regexes))
-
-classes = []
-for filename in filenames:
-    classes.append(re.findall(regex, filename)[0])
+classes = [re.findall(regex, filename)[0] for filename in filenames]
 # %%
 class_dict_pd = [class_dict[class_] for class_ in classes]
 # %%
-pd.DataFrame({
+df = pd.DataFrame({
     "name":filenames,
     "class":classes,
     "class_id":class_dict_pd
 })
+# %%
+df["name"] = df["name"].apply(lambda x:x.replace(".ogg", ".wav"))
+# %%
+df
+# %%
+def ogg2wav(ofn):
+    wfn = ofn.replace('.ogg','.wav')
+    x = AudioSegment.from_ogg(ofn)
+    x.export(wfn, format='wav')
+# %%
+for filename in tqdm(os.listdir(pathlib.Path("../Audiodata"))):
+    with open(os.path.join(pathlib.Path("../Audiodata"), filename), 'r') as f:
+        if f.name[-4:] == ".ogg":
+            ogg2wav(f.name)
+            f.close()
+            os.remove(f.name)
 # %%
