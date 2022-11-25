@@ -29,11 +29,3 @@ with ThreadPoolExecutor(max_workers=20) as executor:
     for j, link in enumerate(links[2:]):
         future = executor.submit(scrape, link)
 # %%
-data = pd.DataFrame({
-    
-    "file_name":filenames,
-    "class":"marauder",
-    "class_id":0
-})
-print(data)
-# %%
