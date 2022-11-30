@@ -10,6 +10,9 @@ from tqdm import tqdm
 from pydub import AudioSegment
 import torchaudio
 from audio_utils import AudioUtils
+from torch.utils.data import random_split
+from sound_dataset import SoundDataset
+import torch
 
 
 def get_links(url):
@@ -114,7 +117,7 @@ if __name__ == "__main__":
     url = "https://oriath.net/Audio/"
     links = get_links(url)
     unique_classes, class_dict = get_classes(links)
-    build_dataframe(unique_classes, class_dict)
+    df = build_dataframe(unique_classes, class_dict)
     transform_audio_data()
 
     # print one example
@@ -125,3 +128,17 @@ if __name__ == "__main__":
     AudioUtils.print_stats(*audio_file)
     AudioUtils.plot_waveform(*audio_file)
     AudioUtils.plot_specgram(*audio_file)
+
+    dataset = SoundDataset(df, "../Audiodata/")
+
+    # Random split of 80:20 between training and testing
+    num_items = len(dataset)
+    num_train = round(num_items * 0.8)
+    num_test = num_items - num_train
+    train_ds, test_ds = random_split(dataset, [num_train, num_test])
+
+    # Create training and validation data loaders
+    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=16, shuffle=True)
+    test_dl = torch.utils.data.DataLoader(test_ds, batch_size=16, shuffle=False)
+
+    print(next(iter(train_dl)))
