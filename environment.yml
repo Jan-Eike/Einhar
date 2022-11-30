@@ -1,4 +1,4 @@
-name: einhar
+name: inhar
 channels:
   - bioconda
   - conda-forge
@@ -10,13 +10,10 @@ dependencies:
   - bs4
   - pandas
   - pytorch
-  - torchaudio
   - torchvision
-  - pytorch-cuda=11.6
   - pathlib
   - joblib
   - tqdm
   - pydub
   - ffmpeg
-  - click
-prefix: C:\Users\j-e_b\anaconda3\envs\einhar
+

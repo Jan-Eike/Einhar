@@ -8,6 +8,10 @@ from bs4 import BeautifulSoup
 import numpy as np
 from tqdm import tqdm
 from pydub import AudioSegment
+import torchaudio
+import matplotlib.pyplot as plt
+import torch
+
 # %%
 URL = "https://oriath.net/Audio/"
 page = requests.get(URL)
@@ -83,4 +87,42 @@ for filename in tqdm(os.listdir(pathlib.Path("../Audiodata"))):
             ogg2wav(f.name)
             f.close()
             os.remove(f.name)
+
 # %%
+
+with open(os.path.join(pathlib.Path("../Audiodata"), "War_for_the_Atlas_Zana_Master_Cartographer_99.wav"), 'r') as f:
+    path = pathlib.Path(f.name).resolve()
+    torch_audio = torchaudio.load(path)
+# %%
+
+# %%
+
+
+# %%
+def plot_waveform(waveform, sample_rate, title="Waveform", xlim=None, ylim=None):
+
+    waveform = waveform.numpy()
+
+    num_channels, num_frames = waveform.shape
+    time_axis = torch.arange(0, num_frames) / sample_rate
+
+    figure, axes = plt.subplots(num_channels, 1)
+    if num_channels == 1:
+        axes = [axes]
+    for c in range(num_channels):
+        axes[c].plot(time_axis, waveform[c], linewidth=1)
+        axes[c].grid(True)
+        if num_channels > 1:
+            axes[c].set_ylabel(f'Channel {c+1}')
+        if xlim:
+            axes[c].set_xlim(xlim)
+        if ylim:
+            axes[c].set_ylim(ylim)
+    figure.suptitle(title)
+    plt.show(block=False)
+# %%
+
+# %%
+print(torch_audio)
+#plt.plot(torch_audio[0])
+plot_waveform(*torch_audio)
