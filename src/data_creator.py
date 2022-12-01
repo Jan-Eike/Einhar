@@ -120,6 +120,11 @@ if __name__ == "__main__":
     df = build_dataframe(unique_classes, class_dict)
     transform_audio_data()
 
+    train_temp = df.sample(frac= 0.8)
+    train_csv = df.sample(frac= 0.8).to_csv("train.csv")
+    print(df.sample(frac= 0.8))
+    test_csv = df.drop(train_temp.index).to_csv("test.csv")
+
     # print one example
     with open(os.path.join(pathlib.Path("../Audiodata"), "Act_1_Bestel_0.wav"), 'r') as f:
         path = pathlib.Path(f.name).resolve()
@@ -130,6 +135,7 @@ if __name__ == "__main__":
     AudioUtils.plot_specgram(*audio_file)
 
     dataset = SoundDataset(df, "../Audiodata/")
+   
 
     # Random split of 80:20 between training and testing
     num_items = len(dataset)
@@ -140,5 +146,9 @@ if __name__ == "__main__":
     # Create training and validation data loaders
     train_dl = torch.utils.data.DataLoader(train_ds, batch_size=16, shuffle=True)
     test_dl = torch.utils.data.DataLoader(test_ds, batch_size=16, shuffle=False)
-
+    
     print(next(iter(train_dl)))
+
+# %%
+
+# %%

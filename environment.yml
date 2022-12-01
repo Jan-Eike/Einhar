@@ -1,4 +1,4 @@
-name: inhar
+name: Einhar
 channels:
   - bioconda
   - conda-forge

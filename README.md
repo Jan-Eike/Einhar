@@ -2,5 +2,5 @@
 
 ## installation:
 ```
-conda env create --name envname --file=environment.yml
+conda env create --file environment.yml --force
 ```
