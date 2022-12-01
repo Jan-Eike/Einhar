@@ -69,7 +69,7 @@ def get_classes(links):
     unique_classes = remove_special_chars(unique_classes)
     # assign a number to each class name
     class_dict = dict(zip(unique_classes, range(len(unique_classes))))
-
+    print(len(unique_classes))
     return unique_classes, class_dict
 
 
@@ -122,7 +122,6 @@ if __name__ == "__main__":
 
     train_temp = df.sample(frac= 0.8)
     train_csv = df.sample(frac= 0.8).to_csv("train.csv")
-    print(df.sample(frac= 0.8))
     test_csv = df.drop(train_temp.index).to_csv("test.csv")
 
     # print one example
@@ -133,22 +132,3 @@ if __name__ == "__main__":
     AudioUtils.print_stats(*audio_file)
     AudioUtils.plot_waveform(*audio_file)
     AudioUtils.plot_specgram(*audio_file)
-
-    dataset = SoundDataset(df, "../Audiodata/")
-   
-
-    # Random split of 80:20 between training and testing
-    num_items = len(dataset)
-    num_train = round(num_items * 0.8)
-    num_test = num_items - num_train
-    train_ds, test_ds = random_split(dataset, [num_train, num_test])
-
-    # Create training and validation data loaders
-    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=16, shuffle=True)
-    test_dl = torch.utils.data.DataLoader(test_ds, batch_size=16, shuffle=False)
-    
-    print(next(iter(train_dl)))
-
-# %%
-
-# %%

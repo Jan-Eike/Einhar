@@ -5,15 +5,11 @@ from model.AudioClassifier import AudioClassifier
 import pandas as pd
 from sound_dataset import SoundDataset
 from torch import utils
+from tqdm import tqdm
+
 
 # %%
-print(torch.cuda.get_arch_list())
-myModel = AudioClassifier()
-device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
-myModel = myModel.to(device)
-next(myModel.parameters()).device
-# %%
-def training(model, train_dl, num_epochs):
+def training(model, train_dl, num_epochs, device):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
@@ -25,8 +21,7 @@ def training(model, train_dl, num_epochs):
         running_loss = 0.0
         correct_prediction = 0
         total_pred = 0
-
-        for i, data in enumerate(train_dl):
+        for i, data in enumerate(tqdm(train_dl)):
             inputs, lables = data[0].to(device), data[1].to(device)
 
             inputs_m, inputs_s = inputs.mean(), inputs.std()
@@ -53,15 +48,21 @@ def training(model, train_dl, num_epochs):
         print(f'Epoch: {epoch}, Loss: {avg_loss:.2f}, Accuracy: {acc:.2f}')
     print("Finished Training")
 # %%
-df_train = pd.read_csv("train.csv")
-df_test = pd.read_csv("test.csv")
+if __name__ == "__main__":
+    df_train = pd.read_csv("train.csv")
+    df_test = pd.read_csv("test.csv")
 
-train_ds = SoundDataset(df_train, "../Audiodata/")
-test_ds = SoundDataset(df_test, "../Audiodata/")
+    train_ds = SoundDataset(df_train, "../Audiodata/")
+    test_ds = SoundDataset(df_test, "../Audiodata/")
 
-train_dl = torch.utils.data.DataLoader(train_ds, batch_size=8, shuffle=True)
-test_dl = torch.utils.data.DataLoader(test_ds, batch_size=8, shuffle=False)
-#%%
-num_epochs = 2
-training(myModel, train_dl, num_epochs)
-# %%
+    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True)
+    test_dl = torch.utils.data.DataLoader(test_ds, batch_size=32, shuffle=False)
+
+    myModel = AudioClassifier()
+    device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
+    myModel = myModel.to(device)
+    print(torch.cuda.get_device_name(torch.cuda.current_device()))
+    #%%
+    num_epochs = 20
+    training(myModel, train_dl, num_epochs, device)
+    # %%

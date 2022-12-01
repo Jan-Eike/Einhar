@@ -7,7 +7,7 @@ class SoundDataset(Dataset):
     def __init__(self, df, data_path):
         self.df = df
         self.data_path = str(data_path)
-        self.duration = 4000
+        self.duration = 6000
         self.sr = 44100
         self.channel = 2
         self.shift_pct = 0.4
