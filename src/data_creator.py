@@ -10,9 +10,7 @@ from tqdm import tqdm
 from pydub import AudioSegment
 import torchaudio
 from audio_utils import AudioUtils
-from torch.utils.data import random_split
-from sound_dataset import SoundDataset
-import torch
+from sklearn.model_selection import train_test_split
 
 
 def get_links(url):
@@ -113,6 +111,12 @@ def transform_audio_data():
                 os.remove(f.name)
 
 
+def train_test_val_split(train_size, test_size, val_size):
+    df_tmp, df_test = train_test_split(df, test_size=test_size)
+    df_train, df_val = train_test_split(df_tmp, test_size=val_size/(1-test_size))
+    return df_train, df_test, df_val
+
+
 if __name__ == "__main__":
     url = "https://oriath.net/Audio/"
     links = get_links(url)
@@ -120,9 +124,12 @@ if __name__ == "__main__":
     df = build_dataframe(unique_classes, class_dict)
     transform_audio_data()
 
-    train_temp = df.sample(frac= 0.8)
-    train_csv = df.sample(frac= 0.8).to_csv("train.csv")
-    test_csv = df.drop(train_temp.index).to_csv("test.csv")
+    train_size, test_size, val_size = 0.7, 0.15, 0.15
+    df_train, df_test, df_val = train_test_val_split(train_size, test_size, val_size)
+    df_train.to_csv("train.csv")
+    df_test.to_csv("test.csv")
+    df_val.to_csv("val.csv")
+    print(df_train.shape, df_test.shape, df_val.shape)
 
     # print one example
     with open(os.path.join(pathlib.Path("../Audiodata"), "Act_1_Bestel_0.wav"), 'r') as f:
