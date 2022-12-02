@@ -122,7 +122,7 @@ if __name__ == "__main__":
     links = get_links(url)
     unique_classes, class_dict = get_classes(links)
     df = build_dataframe(unique_classes, class_dict)
-    transform_audio_data()
+    #transform_audio_data()
 
     train_size, test_size, val_size = 0.7, 0.15, 0.15
     df_train, df_test, df_val = train_test_val_split(train_size, test_size, val_size)
@@ -131,11 +131,43 @@ if __name__ == "__main__":
     df_val.to_csv("val.csv")
     print(df_train.shape, df_test.shape, df_val.shape)
 
-    # print one example
-    with open(os.path.join(pathlib.Path("../Audiodata"), "Act_1_Bestel_0.wav"), 'r') as f:
-        path = pathlib.Path(f.name).resolve()
-        audio_file = torchaudio.load(path)
+# %%
+df_train = pd.read_csv("train.csv")
+df_test = pd.read_csv("test.csv")
+df_val = pd.read_csv("val.csv")
 
-    AudioUtils.print_stats(*audio_file)
-    AudioUtils.plot_waveform(*audio_file)
-    AudioUtils.plot_specgram(*audio_file)
+all_data = pd.concat([df_train, df_test, df_val]).reset_index(drop = True)
+#
+split_data = all_data.groupby("class_id").class_id.value_counts().nlargest(100)
+#print(all_data)
+
+print(split_data)
+df_dog = pd.DataFrame({
+    "class_id":split_data.index.values,
+    "count":split_data.to_list()
+})
+df_dog.name = None
+df_dog.name = df_dog.class_id.map(class_dict)
+print(df_dog)
+
+#print(split_data.map(class_dict))
+# %%
+print(split_data.index[1][-1])
+a = []
+for i in range(split_data.size):
+    a.append(split_data.index[i][-1])
+print(a)
+df_dog = pd.DataFrame({
+    
+    "class_id":a,
+    "count":split_data.to_list()
+})
+df_dog.name = None
+df_dog.name = df_dog.class_id.map(class_dict)
+print(df_dog.name)
+    
+
+
+
+
+# %%

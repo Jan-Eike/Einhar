@@ -5,6 +5,8 @@ import pandas as pd
 import os
 import pathlib
 from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
+from pydub import AudioSegment
 
 URL = "https://oriath.net/Audio/"
 page = requests.get(URL)
@@ -29,3 +31,20 @@ with ThreadPoolExecutor(max_workers=20) as executor:
     for j, link in enumerate(links[2:]):
         future = executor.submit(scrape, link)
 # %%
+for filename in tqdm(os.listdir(pathlib.Path("../Audiodata"))):
+    with open(os.path.join(pathlib.Path("../Audiodata"), filename), 'r') as f:
+        path = pathlib.Path(f.name).resolve()
+        audio = AudioSegment.from_wav(path)
+        
+        six_sec = 6 * 1000
+    
+        divider = (int) (audio.duration_seconds * 1000 / six_sec)
+        if audio.duration_seconds > 6:
+            for i in range(divider):
+                audio[i * six_sec: (i + 1) * six_sec].export(f"../Audiodata/{f.name[:-4]}_{i}.wav", format = "wav")
+                f.close()
+                if i == divider-1:
+                    audio[(i+1) * six_sec:].export(f"../Audiodata/{f.name[:-4]}_{i+1}.wav", format = "wav")
+                    f.close()
+                   
+            os.remove(path)
