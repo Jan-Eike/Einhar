@@ -96,4 +96,11 @@ class AudioPreprocessing():
             aug_specgram = torchaudio.transforms.TimeMasking(time_mask_param)(aug_specgram, mask_value)
 
         return aug_specgram
+
+    
+    @staticmethod
+    def pad_sequence(batch):
+        # Make all tensor in a batch the same length by padding with zeros
+        batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.)
+        return batch.permute(0, 2, 1)
         

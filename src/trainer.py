@@ -7,19 +7,16 @@ from sound_dataset import SoundDataset
 from tqdm import tqdm
 import pathlib
 import numpy as np
+from audio_preprocessing import AudioPreprocessing
 
 
 # %%
 def training(model, train_dl, val_dl, num_epochs, device):
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
-                                                steps_per_epoch=int(len(train_dl)),
-                                                epochs=num_epochs,
-                                                anneal_strategy='linear')
-
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=64, gamma=0.1)
     min_valid_loss = np.inf
     for epoch in range(num_epochs):
+        print(optimizer)
         train_loss = 0.0
         correct_prediction = 0
         total_prediction = 0
@@ -33,7 +30,7 @@ def training(model, train_dl, val_dl, num_epochs, device):
             optimizer.zero_grad()
 
             outputs = model(inputs)
-            loss = criterion(outputs, lables)
+            loss = nn.functional.nll_loss(outputs.squeeze(), lables)
             loss.backward()
             optimizer.step()
             scheduler.step()
@@ -45,11 +42,11 @@ def training(model, train_dl, val_dl, num_epochs, device):
         for i, data in enumerate(tqdm(val_dl)):
             inputs, lables = data[0].to(device), data[1].to(device)
             outputs = model(inputs)
-            loss = criterion(outputs, lables)
+            loss = nn.functional.nll_loss(outputs.squeeze(), lables)
             valid_loss += loss.item()
 
             # val accuracy
-            _, prediction = torch.max(outputs, 1)
+            _, prediction = torch.max(outputs.squeeze(), 1)
             correct_prediction += (prediction == lables).sum().item()
             total_prediction += prediction.shape[0]
 
@@ -72,9 +69,9 @@ if __name__ == "__main__":
     test_ds = SoundDataset(df_test, "../Audiodata/")
     val_ds = SoundDataset(df_val, "../Audiodata/")
 
-    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True)
-    test_dl = torch.utils.data.DataLoader(test_ds, batch_size=32, shuffle=False)
-    val_dl = torch.utils.data.DataLoader(val_ds, batch_size=32, shuffle=False)
+    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=128, shuffle=True)
+    test_dl = torch.utils.data.DataLoader(test_ds, batch_size=128, shuffle=False)
+    val_dl = torch.utils.data.DataLoader(val_ds, batch_size=128, shuffle=False)
 
     model = AudioClassifier()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -82,6 +79,6 @@ if __name__ == "__main__":
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
     #%%
     pathlib.Path('./model/saved_models').mkdir(parents=True, exist_ok=True) 
-    num_epochs = 20
+    num_epochs = 100
     training(model, train_dl, val_dl, num_epochs, device)
     # %%

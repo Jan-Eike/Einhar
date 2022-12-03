@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 from audio_preprocessing import AudioPreprocessing
 import torchaudio
+import torch
 
 
 class SoundDataset(Dataset):
@@ -8,10 +9,17 @@ class SoundDataset(Dataset):
         self.df = df
         self.data_path = str(data_path)
         self.duration = 6000
-        self.sr = 44100
-        self.channel = 2
+        self.sr = 8000
+        self.channel = 1
         self.shift_pct = 0.4
+        self.noise = self.create_noise()
 
+
+    def create_noise(self):
+        SAMPLE_NOISE = torchaudio.utils.download_asset("tutorial-assets/Lab41-SRI-VOiCES-rm1-babb-mc01-stu-clo-8000hz.wav")
+        noise, _ = torchaudio.load(SAMPLE_NOISE)
+        noise = torch.cat([noise for _ in range(20)], 1)
+        return noise
 
     def __len__(self):
         return len(self.df) 
@@ -25,20 +33,14 @@ class SoundDataset(Dataset):
         class_id = self.df.loc[idx, 'class_id']
 
         audio = torchaudio.load(audio_file)
+        noise = self.noise[:, : audio[0].shape[1]]
+        audio = (audio[0] + noise*10, audio[1])
         # Some sounds have a higher sample rate, or fewer channels compared to the
         # majority. So make all sounds have the same number of channels and same 
         # sample rate. Unless the sample rate is the same, the pad_trunc will still
         # result in arrays of different lengths, even though the sound duration is
         # the same.
-        try:
-            reaud = AudioPreprocessing.resample(audio, self.sr)
-        except Exception:
-            print(audio_file)
+        reaud = AudioPreprocessing.resample(audio, self.sr)
         rechan = AudioPreprocessing.rechannel(reaud, self.channel)
-
-        dur_aud = AudioPreprocessing.pad_trunc(rechan, self.duration)
-        shift_aud = AudioPreprocessing.time_shift(dur_aud, self.shift_pct)
-        sgram = AudioPreprocessing.specgram(shift_aud, n_mels=64, n_fft=1024, hop_len=None)
-        aug_sgram = AudioPreprocessing.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
-
-        return aug_sgram, class_id
+        audio = AudioPreprocessing.pad_trunc(rechan, self.duration)
+        return audio[0], class_id

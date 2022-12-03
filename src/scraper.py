@@ -43,8 +43,9 @@ for filename in tqdm(os.listdir(pathlib.Path("../Audiodata"))):
             for i in range(divider):
                 audio[i * six_sec: (i + 1) * six_sec].export(f"../Audiodata/{f.name[:-4]}_{i}.wav", format = "wav")
                 f.close()
-                if i == divider-1:
+                if (i == divider-1) and ((int)(divider * (six_sec / 1000) != audio.duration_seconds)):
                     audio[(i+1) * six_sec:].export(f"../Audiodata/{f.name[:-4]}_{i+1}.wav", format = "wav")
                     f.close()
                    
             os.remove(path)
+# %%
