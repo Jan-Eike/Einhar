@@ -139,35 +139,10 @@ df_val = pd.read_csv("val.csv")
 all_data = pd.concat([df_train, df_test, df_val]).reset_index(drop = True)
 #
 split_data = all_data.groupby("class_id").class_id.value_counts().nlargest(100)
-#print(all_data)
-
-print(split_data)
-df_dog = pd.DataFrame({
-    "class_id":split_data.index.values,
+df_count = pd.DataFrame({
+    "class_id":np.array(split_data.index.to_list())[:,1],
     "count":split_data.to_list()
 })
-df_dog.name = None
-df_dog.name = df_dog.class_id.map(class_dict)
-print(df_dog)
+df_count["name"] = df_count.class_id.map({v: k for k, v in class_dict.items()})
+print(df_count)
 
-#print(split_data.map(class_dict))
-# %%
-print(split_data.index[1][-1])
-a = []
-for i in range(split_data.size):
-    a.append(split_data.index[i][-1])
-print(a)
-df_dog = pd.DataFrame({
-    
-    "class_id":a,
-    "count":split_data.to_list()
-})
-df_dog.name = None
-df_dog.name = df_dog.class_id.map(class_dict)
-print(df_dog.name)
-    
-
-
-
-
-# %%

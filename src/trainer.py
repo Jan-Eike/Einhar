@@ -76,7 +76,7 @@ if __name__ == "__main__":
     val_dl = torch.utils.data.DataLoader(val_ds, batch_size=32, shuffle=False)
 
     model = AudioClassifier()
-    device = torch.device("cuda:0" if torch.cuda.is_available()else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
     #%%
