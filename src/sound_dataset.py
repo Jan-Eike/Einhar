@@ -30,7 +30,10 @@ class SoundDataset(Dataset):
         # sample rate. Unless the sample rate is the same, the pad_trunc will still
         # result in arrays of different lengths, even though the sound duration is
         # the same.
-        reaud = AudioPreprocessing.resample(audio, self.sr)
+        try:
+            reaud = AudioPreprocessing.resample(audio, self.sr)
+        except Exception:
+            print(audio_file)
         rechan = AudioPreprocessing.rechannel(reaud, self.channel)
 
         dur_aud = AudioPreprocessing.pad_trunc(rechan, self.duration)

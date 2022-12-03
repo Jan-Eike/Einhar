@@ -111,7 +111,8 @@ def transform_audio_data():
                 os.remove(f.name)
 
 
-def train_test_val_split(train_size, test_size, val_size):
+def train_test_val_split(df, train_size, test_size, val_size):
+    assert(train_size + test_size + val_size == 1.), "wrong splits"
     df_tmp, df_test = train_test_split(df, test_size=test_size)
     df_train, df_val = train_test_split(df_tmp, test_size=val_size/(1-test_size))
     return df_train, df_test, df_val
@@ -124,25 +125,27 @@ if __name__ == "__main__":
     df = build_dataframe(unique_classes, class_dict)
     #transform_audio_data()
 
+    split_data = df.groupby("class_id").class_id.value_counts().nlargest(20)
+    df_count = pd.DataFrame({
+        "class_id":np.array(split_data.index.to_list())[:,1],
+        "count":split_data.to_list()
+    })
+    df_count["class"] = df_count.class_id.map({v: k for k, v in class_dict.items()})
+
+    df = pd.merge(df, df_count, how="right", on="class_id").reset_index(drop=True)
+    df = df.drop(["count", "class_y"], axis=1)
+    df = df.rename({"class_x":"class"}, axis=1)
+
+    a = list(df.class_id.unique())
+    b = list(range(df.class_id.unique().shape[0]))
+    c_dict = dict(zip(a, b))
+    df["class_id"] = [c_dict[class_] for class_ in df["class_id"]]
+    print(df)
     train_size, test_size, val_size = 0.7, 0.15, 0.15
-    df_train, df_test, df_val = train_test_val_split(train_size, test_size, val_size)
+    df_train, df_test, df_val = train_test_val_split(df, train_size, test_size, val_size)
     df_train.to_csv("train.csv")
     df_test.to_csv("test.csv")
     df_val.to_csv("val.csv")
     print(df_train.shape, df_test.shape, df_val.shape)
 
 # %%
-df_train = pd.read_csv("train.csv")
-df_test = pd.read_csv("test.csv")
-df_val = pd.read_csv("val.csv")
-
-all_data = pd.concat([df_train, df_test, df_val]).reset_index(drop = True)
-#
-split_data = all_data.groupby("class_id").class_id.value_counts().nlargest(100)
-df_count = pd.DataFrame({
-    "class_id":np.array(split_data.index.to_list())[:,1],
-    "count":split_data.to_list()
-})
-df_count["name"] = df_count.class_id.map({v: k for k, v in class_dict.items()})
-print(df_count)
-

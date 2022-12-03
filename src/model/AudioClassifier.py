@@ -41,7 +41,7 @@ class AudioClassifier(nn.Module):
 
         
         self.ap = nn.AdaptiveAvgPool2d(output_size=1)
-        self.lin = nn.Linear(in_features=64, out_features=225)
+        self.lin = nn.Linear(in_features=64, out_features=20)
 
        
         self.conv = nn.Sequential(*conv_layers)

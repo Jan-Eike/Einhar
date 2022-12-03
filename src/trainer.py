@@ -23,6 +23,7 @@ def training(model, train_dl, val_dl, num_epochs, device):
         train_loss = 0.0
         correct_prediction = 0
         total_prediction = 0
+        model.train()
         for i, data in enumerate(tqdm(train_dl)):
             inputs, lables = data[0].to(device), data[1].to(device)
 
@@ -81,6 +82,6 @@ if __name__ == "__main__":
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
     #%%
     pathlib.Path('./model/saved_models').mkdir(parents=True, exist_ok=True) 
-    num_epochs = 2
+    num_epochs = 20
     training(model, train_dl, val_dl, num_epochs, device)
     # %%
