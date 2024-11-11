@@ -5,8 +5,8 @@ from datasets import load_dataset
 import os
 import csv
 
-audio_path = "../../Audiodata_Einhar/"
-csv_path = "../../data_einhar/metadata.csv"
+audio_path = "../Audiodata_Einhar/"
+csv_path = "../data_einhar/metadata.csv"
 file_names = os.listdir(audio_path)
 #create transcripts for audio files
 
