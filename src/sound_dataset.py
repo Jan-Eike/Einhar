@@ -9,7 +9,7 @@ class SoundDataset(Dataset):
         self.df = df
         self.data_path = str(data_path)
         self.duration = 6000
-        self.sr = 8000
+        self.sr = 16000
         self.channel = 1
         self.shift_pct = 0.4
         self.noise = self.create_noise()
@@ -41,6 +41,6 @@ class SoundDataset(Dataset):
         # result in arrays of different lengths, even though the sound duration is
         # the same.
         reaud = AudioPreprocessing.resample(audio, self.sr)
-        rechan = AudioPreprocessing.rechannel(reaud, self.channel)
-        audio = AudioPreprocessing.pad_trunc(rechan, self.duration)
-        return audio[0], class_id
+        #rechan = AudioPreprocessing.rechannel(reaud, self.channel)
+        #audio = AudioPreprocessing.pad_trunc(rechan, self.duration)
+        return reaud[0], class_id

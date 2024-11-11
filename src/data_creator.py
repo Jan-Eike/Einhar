@@ -38,7 +38,7 @@ def remove_special_chars(unique_classes):
 
 
 def match_reg(s, exceptions_reg):
-        return bool(re.search(re.compile("|".join(exceptions_reg)), s))
+    return bool(re.search(re.compile("|".join(exceptions_reg)), s))
 
 
 def get_classes(links):
@@ -143,9 +143,9 @@ if __name__ == "__main__":
     print(df)
     train_size, test_size, val_size = 0.7, 0.15, 0.15
     df_train, df_test, df_val = train_test_val_split(df, train_size, test_size, val_size)
-    df_train.to_csv("train.csv")
-    df_test.to_csv("test.csv")
-    df_val.to_csv("val.csv")
+    df_train.to_csv("./../data/train.csv")
+    df_test.to_csv("./../data/test.csv")
+    df_val.to_csv("./../data/val.csv")
     print(df_train.shape, df_test.shape, df_val.shape)
 
 # %%
